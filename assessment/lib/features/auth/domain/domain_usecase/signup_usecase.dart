@@ -7,10 +7,9 @@ import 'package:dartz/dartz.dart';
 class SignupUsecase implements UseCase<User, SignupParams> {
   final AuthRepositories repositories;
 
-  SignupUsecase(this.repositories);
+  SignupUsecase({required this.repositories});
   @override
   Future<Either<Failure, User>> call(SignupParams params) {
-    return repositories.register(params.email, params.password);
+    return repositories.register(params.name, params.email, params.password);
   }
 }
-

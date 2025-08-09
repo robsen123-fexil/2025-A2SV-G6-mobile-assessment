@@ -4,15 +4,13 @@ import 'package:assessment/features/auth/domain/domain_repositories/auth_reposit
 import 'package:assessment/features/auth/domain/entities/user.dart';
 import 'package:dartz/dartz.dart';
 
-class LoginUseCase implements UseCase<User, LoginParams> {
+class LoginUseCase implements UseCase<String, LoginParams> {
   final AuthRepositories repository;
 
-  LoginUseCase(this.repository);
+  LoginUseCase({required this.repository});
 
   @override
-  Future<Either<Failure, User>> call(LoginParams params) {
+  Future<Either<Failure, String>> call(LoginParams params) {
     return repository.login(params.email, params.password);
   }
 }
-
-

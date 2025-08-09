@@ -8,3 +8,9 @@ abstract class Failure extends Equatable {
   @override
   List<Object?> get props => [message];
 }
+class ServerFailure extends Failure {
+  ServerFailure(String message) : super(message);
+}
+class NetworkFailure extends Failure {
+  NetworkFailure(String message) : super(message);
+}

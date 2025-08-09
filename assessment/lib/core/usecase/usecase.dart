@@ -5,7 +5,8 @@ abstract class UseCase<Type, Params> {
   Future<Either<Failure, Type>> call(Params params);
 }
 
-class NoParams{}
+class NoParams {}
+
 class SignupParams {
   final String name;
   final String email;
@@ -17,10 +18,11 @@ class SignupParams {
     required this.password,
   });
 }
+
 class LoginParams {
+
   final String email;
   final String password;
 
-  LoginParams({required this.email, required this.password});
+  LoginParams({ required this.email, required this.password});
 }
-
