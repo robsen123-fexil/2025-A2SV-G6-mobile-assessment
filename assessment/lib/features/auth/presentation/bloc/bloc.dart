@@ -21,6 +21,14 @@ AuthBloc(this.authRepository) : super(AuthInitial()) {
         ),
       );
     });
+    on<LoginRequested>((event, emit) async {
+      emit(AuthLoading());
+      final result = await authRepository.login(event.email, event.password);
+      result.fold(
+        (failure) => emit(AuthFailure(failure.message)),
+        (token) => emit(LoginSuccess(token)),
+      );
+    });
 
     
   }

@@ -51,7 +51,7 @@ class __LoginViewState extends State<_LoginView> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthSuccess) {
+          if (state is LoginSuccess) {
             _showMessage('Login successful');
             Navigator.pushReplacement(
               context,

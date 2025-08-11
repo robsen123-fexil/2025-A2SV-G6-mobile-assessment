@@ -62,7 +62,11 @@ class __SignUpViewState extends State<_SignUpView> {
             );
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => LoginScreen(authRepository: AuthRepositories)),
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(
+                  authRepository: context.read<AuthBloc>().authRepository,
+                ),
+              ),
             );
           } else if (state is AuthFailure) {
             _showMessage('Registration failed: ${state.message}');
@@ -207,7 +211,10 @@ class __SignUpViewState extends State<_SignUpView> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => LoginPage(),
+                                builder: (context) => LoginScreen(
+                                  authRepository:
+                                      context.read<AuthBloc>().authRepository,
+                                ),
                               ),
                             );
                           },
