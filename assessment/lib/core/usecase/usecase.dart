@@ -26,3 +26,10 @@ class LoginParams {
 
   LoginParams({ required this.email, required this.password});
 }
+
+class InitiateChatParams {
+  final String token;
+  final String recieverid;
+
+  InitiateChatParams({required this.token, required this.recieverid});
+}

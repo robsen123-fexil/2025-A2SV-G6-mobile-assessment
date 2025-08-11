@@ -2,7 +2,7 @@ import 'package:assessment/features/auth/domain/domain_repositories/auth_reposit
 import 'package:assessment/features/auth/presentation/bloc/bloc.dart';
 import 'package:assessment/features/auth/presentation/bloc/event.dart';
 import 'package:assessment/features/auth/presentation/bloc/state.dart';
-import 'package:assessment/features/auth/presentation/pages/chat_list.dart';
+import 'package:assessment/features/chat/presentation/bloc/pages/chat_list.dart';
 import 'package:assessment/features/auth/presentation/widgets/texfieild.dart';
 import 'package:assessment/features/auth/presentation/widgets/textbutton.dart';
 import 'package:flutter/gestures.dart';
@@ -13,7 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 class LoginScreen extends StatelessWidget {
   final AuthRepositories authRepository;
 
-  const LoginScreen({Key? key, required this.authRepository}) : super(key: key);
+  const LoginScreen({super.key, required this.authRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +52,19 @@ class __LoginViewState extends State<_LoginView> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is LoginSuccess) {
+            // Print token to terminal when user logs in
+            // ignore: avoid_print
+            print('User logged in. Access token: ' + state.token);
             _showMessage('Login successful');
+            final authBloc = context.read<AuthBloc>();
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => ChatScreen()),
+              MaterialPageRoute(
+                builder: (context) => BlocProvider.value(
+                  value: authBloc,
+                  child: ChatScreen(token: state.token),
+                ),
+              ),
             );
           } else if (state is AuthFailure) {
             _showMessage('Login failed: ${state.message}');

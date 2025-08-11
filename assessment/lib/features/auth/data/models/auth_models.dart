@@ -1,8 +1,7 @@
 import 'package:assessment/features/auth/domain/entities/user.dart';
 
 class UserModel extends User {
-  UserModel({required String id, required String name, required String email})
-    : super(id: id, name: name, email: email);
+  UserModel({required super.id, required super.name, required super.email});
 
   factory UserModel.fromjson(Map<String, dynamic> json) {
     // Extract user data from the nested 'data' field

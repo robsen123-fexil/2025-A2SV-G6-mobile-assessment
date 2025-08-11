@@ -2,7 +2,7 @@ import 'package:assessment/features/auth/domain/domain_repositories/auth_reposit
 import 'package:assessment/features/auth/presentation/bloc/event.dart';
 import 'package:assessment/features/auth/presentation/bloc/state.dart';
 import 'package:bloc/bloc.dart';
-
+  
 class AuthBloc extends Bloc<AuthEvent , AuthState> {
   final AuthRepositories authRepository;
 AuthBloc(this.authRepository) : super(AuthInitial()) {
@@ -29,6 +29,7 @@ AuthBloc(this.authRepository) : super(AuthInitial()) {
         (token) => emit(LoginSuccess(token)),
       );
     });
+
 
     
   }

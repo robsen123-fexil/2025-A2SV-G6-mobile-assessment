@@ -33,7 +33,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDataSource {
       print(email);
       try {
         final response = await client.post(
-          Uri.parse('$baseurl'),
+          Uri.parse(baseurl),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'email': email, 'password': password}),
         );

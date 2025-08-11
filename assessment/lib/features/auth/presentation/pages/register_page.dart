@@ -1,3 +1,7 @@
+import 'package:assessment/core/network_info/network_info.dart';
+import 'package:assessment/features/auth/data/data_repositories/auth_repositories_imp.dart';
+import 'package:assessment/features/auth/data/datasources/auth_datasource.dart';
+import 'package:assessment/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,12 +12,13 @@ import 'package:assessment/features/auth/presentation/bloc/state.dart';
 import 'package:assessment/features/auth/presentation/pages/login_page.dart';
 import 'package:assessment/features/auth/presentation/widgets/texfieild.dart';
 import 'package:assessment/features/auth/presentation/widgets/textbutton.dart';
+import 'package:http/http.dart' as http;
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class SignUpScreen extends StatelessWidget {
   final AuthRepositories authRepository;
 
-  const SignUpScreen({Key? key, required this.authRepository})
-    : super(key: key);
+  const SignUpScreen({super.key, required this.authRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -212,9 +217,15 @@ class __SignUpViewState extends State<_SignUpView> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => LoginScreen(
-                                  authRepository:
-                                      context.read<AuthBloc>().authRepository,
-                                ),
+        authRepository: AuthRepositoriesImp(
+          remoteDataSource: AuthRemoteDatasourceImpl(
+            client: http.Client(),
+            networkInfo: NetworkInfoImpl(InternetConnectionChecker.createInstance()),
+          ),
+          networkInfo: NetworkInfoImpl(InternetConnectionChecker.createInstance()),
+          localDataSource: AuthLocalDataSourceImpl(),
+        ),
+        ),
                               ),
                             );
                           },
