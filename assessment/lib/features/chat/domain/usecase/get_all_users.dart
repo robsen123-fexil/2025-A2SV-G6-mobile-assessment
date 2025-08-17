@@ -1,11 +1,10 @@
 import 'package:assessment/core/error/failure.dart';
 import 'package:assessment/features/chat/domain/entities/user_list.dart';
+import 'package:assessment/features/chat/domain/repositories/chat_repositories.dart';
 import 'package:dartz/dartz.dart';
 
-import '../repositories/user_repository.dart';
-
 class GetAllUsers {
-  final GetAllUserRepository repository;
+  final ChatRepositories repository;
 
   GetAllUsers(this.repository);
 

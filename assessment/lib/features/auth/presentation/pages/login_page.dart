@@ -1,3 +1,7 @@
+import 'package:assessment/core/network_info/network_info.dart';
+import 'package:assessment/features/auth/data/data_repositories/auth_repositories_imp.dart';
+import 'package:assessment/features/auth/data/datasources/auth_datasource.dart';
+import 'package:assessment/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:assessment/features/auth/domain/domain_repositories/auth_repositories.dart';
 import 'package:assessment/features/auth/presentation/bloc/bloc.dart';
 import 'package:assessment/features/auth/presentation/bloc/event.dart';
@@ -9,6 +13,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class LoginScreen extends StatelessWidget {
   final AuthRepositories authRepository;
@@ -45,6 +51,17 @@ class __LoginViewState extends State<_LoginView> {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
+ 
+  final authRepository = AuthRepositoriesImp(
+    remoteDataSource: AuthRemoteDatasourceImpl(
+      client: http.Client(),
+      networkInfo:  NetworkInfoImpl(
+    InternetConnectionChecker.createInstance(),
+  ),
+    ),
+    networkInfo: NetworkInfoImpl(InternetConnectionChecker.createInstance()) ,
+    localDataSource: AuthLocalDataSourceImpl(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +79,9 @@ class __LoginViewState extends State<_LoginView> {
               MaterialPageRoute(
                 builder: (context) => BlocProvider.value(
                   value: authBloc,
-                  child: ChatScreen(token: state.token),
+                  child: ChatScreen(
+                    authRepository: authRepository,
+                    token: state.token),
                 ),
               ),
             );

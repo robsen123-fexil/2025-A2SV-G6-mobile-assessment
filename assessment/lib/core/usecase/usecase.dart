@@ -33,3 +33,10 @@ class InitiateChatParams {
 
   InitiateChatParams({required this.token, required this.recieverid});
 }
+
+class ChatDetailParams {
+  final String token;
+  final String chatId;
+
+  ChatDetailParams({required this.token, required this.chatId});
+}

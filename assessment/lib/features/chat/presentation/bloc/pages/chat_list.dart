@@ -1,42 +1,46 @@
 import 'dart:ui';
 
+import 'package:assessment/features/auth/data/data_repositories/auth_repositories_imp.dart';
 import 'package:assessment/features/chat/presentation/bloc/bloc/event.dart';
 import 'package:assessment/features/chat/presentation/bloc/bloc/state.dart'
     as user_state;
 import 'package:assessment/features/chat/presentation/bloc/bloc/bloc.dart';
 import 'package:assessment/features/chat/domain/entities/chat_room.dart';
+import 'package:assessment/features/chat/presentation/bloc/pages/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatScreen extends StatefulWidget {
   final String token;
-  const ChatScreen({super.key, required this.token});
+  final AuthRepositoriesImp authRepository;
+  const ChatScreen({
+    super.key,
+    required this.token,
+    required this.authRepository,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late final UserBloc _userBloc;
   @override
   void initState() {
     super.initState();
-    _userBloc = UserBloc(user_state.UsersLoading())
-      ..add(FetchUsersRequested(widget.token))
-      ..add(FetchChattedRequest(widget.token));
+    // Dispatch initial events on the provided ChatBloc
+    final bloc = context.read<ChatBloc>();
+    bloc.add(FetchUsersRequested(widget.token));
+    bloc.add(FetchFriendsRequested(widget.token));
   }
 
   @override
   void dispose() {
-    _userBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _userBloc,
-      child: Scaffold(
+    return Scaffold(
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -61,11 +65,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 // Status section
                 SizedBox(
                   height: 100,
-                  child: BlocBuilder<UserBloc, user_state.UserState>(
-                    buildWhen: (prev, curr) =>
-                        curr is user_state.UsersLoading ||
-                        curr is user_state.UsersLoaded ||
-                        curr is user_state.UsersFailure,
+                  child: BlocConsumer<ChatBloc, user_state.ChatState>(
+                    listener: (context, state) {
+                      // handle side effects if needed
+                    },
+                    buildWhen:
+                        (prev, curr) =>
+                            curr is user_state.UsersLoading ||
+                            curr is user_state.UsersLoaded ||
+                            curr is user_state.UsersFailure,
                     builder: (context, state) {
                       if (state is user_state.UsersLoading) {
                         return Center(
@@ -80,46 +88,71 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         );
                       }
-                      List<String> names = [];
+                      // Keep full user objects to access ids for initiating chats
+                      List users = [];
                       if (state is user_state.UsersLoaded) {
-                        names = state.users.map((e) => e.name).toList();
+                        users = state.users;
                       }
-                      // Prepend 'My status'
-                      final statusNames = ['My status', ...names];
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: statusNames.length,
+                        itemCount: users.length + 1, // +1 for 'My status'
                         itemBuilder: (context, index) {
                           final isMyStatus = index == 0;
-                          final name = statusNames[index];
+                          final name =
+                              isMyStatus ? 'My status' : users[index - 1].name;
                           return Container(
                             margin: EdgeInsets.only(right: 16),
                             child: Column(
                               children: [
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border:
-                                        isMyStatus
-                                            ? Border.all(
-                                              color: Colors.white,
-                                              width: 2,
-                                            )
-                                            : Border.all(
-                                              color: Colors.green,
-                                              width: 2,
-                                            ),
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: Colors.grey[300],
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.grey[600],
-                                      size: 28,
+                                GestureDetector(
+                                  onTap: () {
+                                    if (!isMyStatus) {
+                                      final receiverId = users[index - 1].id;
+                                      context.read<ChatBloc>().add(
+                                        InitiateChatRequested(
+                                          widget.token,
+                                          receiverId,
+                                        ),
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => ChatDetailScreen(
+                                                token: widget.token,
+                                                recievername: name,
+                                                recieverid: receiverId,
+                                                chatid: chat.id,
+                                              ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border:
+                                          isMyStatus
+                                              ? Border.all(
+                                                color: Colors.white,
+                                                width: 2,
+                                              )
+                                              : Border.all(
+                                                color: Colors.green,
+                                                width: 2,
+                                              ),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 28,
+                                      backgroundColor: Colors.grey[300],
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.grey[600],
+                                        size: 28,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -153,21 +186,23 @@ class _ChatScreenState extends State<ChatScreen> {
                         topRight: Radius.circular(30),
                       ),
                     ),
-                    child: BlocBuilder<UserBloc, user_state.UserState>(
-                      buildWhen: (prev, curr) =>
-                          curr is user_state.ChattedLoading ||
-                          curr is user_state.ChattedLoaded ||
-                          curr is user_state.ChattedFailure,
+                    child: BlocConsumer<ChatBloc, user_state.ChatState>(
+                      listener: (context, state) {},
+                      buildWhen:
+                          (prev, curr) =>
+                              curr is user_state.ChatsLoading ||
+                              curr is user_state.ChatsLoaded ||
+                              curr is user_state.ChatsFailure,
                       builder: (context, state) {
-                        if (state is user_state.ChattedLoading) {
+                        if (state is user_state.ChatsLoading) {
                           return Center(child: CircularProgressIndicator());
                         }
-                        if (state is user_state.ChattedFailure) {
+                        if (state is user_state.ChatsFailure) {
                           return Center(child: Text(state.message));
                         }
                         // Use full chat objects to have access to receiver id and name
                         List<ChatRoom> chats = [];
-                        if (state is user_state.ChattedLoaded) {
+                        if (state is user_state.ChatsLoaded) {
                           chats = state.chats;
                         }
                         return ListView.builder(
@@ -175,53 +210,53 @@ class _ChatScreenState extends State<ChatScreen> {
                           itemCount: chats.length,
                           itemBuilder: (context, index) {
                             final chat = chats[index];
-                            final name = chat.user1.name;
-                            final receiverId = chat.user1.id;
+                            final name = chat.user2.name;
+                            final receiverId = chat.user2.id;
                             return GestureDetector(
                               onTap: () {
-                                context.read<UserBloc>().add(
-                                      InitiateChatRequested(
-                                        widget.token,
-                                        receiverId,
-                                      ),
-                                    );
+                                context.read<ChatBloc>().add(
+                                  InitiateChatRequested(
+                                    widget.token,
+                                    receiverId,
+                                  ),
+                                );
                               },
                               child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 25,
-                                    backgroundColor: _getAvatarColor(index),
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 25,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 25,
+                                      backgroundColor: _getAvatarColor(index),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 25,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 15),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
+                                    SizedBox(width: 15),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            name,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black87,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
                             );
                           },
                         );

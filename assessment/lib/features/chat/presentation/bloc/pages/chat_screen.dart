@@ -1,9 +1,44 @@
-
-
+import 'package:assessment/features/auth/presentation/bloc/state.dart'
+    as user_state;
+import 'package:assessment/features/chat/presentation/bloc/bloc/bloc.dart';
+import 'package:assessment/features/chat/presentation/bloc/bloc/event.dart';
+import 'package:assessment/features/chat/presentation/bloc/bloc/state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ChatDetailScreen extends StatelessWidget {
-  const ChatDetailScreen({super.key});
+class ChatDetailScreen extends StatefulWidget {
+  final String token;
+  final String recievername;
+  final String recieverid;
+  final String chatid;
+
+  const ChatDetailScreen({
+    super.key,
+    required this.token,
+    required this.recievername,
+    required this.recieverid,
+    required this.chatid,
+  });
+
+  @override
+  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+}
+
+class _ChatDetailScreenState extends State<ChatDetailScreen> {
+  // late final UserBloc _userBloc;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //    _userBloc=UserBloc(user_state.UsersLoading())
+
+  // }
+
+  // @override
+  // void dispose() {
+  //   _userBloc.close();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +64,7 @@ class ChatDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sabila Sayma',
+                    widget.recievername,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
